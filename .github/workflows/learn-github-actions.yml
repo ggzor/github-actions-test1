@@ -1,13 +1,41 @@
 name: learn-github-actions
-on: [push]
+on:
+  push:
+    tags: ['v*']
+env:
+  WORKFLOW_VAR: 'Workflow var is set!!!'
 jobs:
-  check-bats-version:
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        var: [0, 1]
+    env:
+      JOB_VAR: 'Job var is set!!!'
+      MATRIX_VAR: ${{ matrix.var }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - name: Run check script
+        run: ./.github/scripts/check.sh
+        shell: bash
+        env:
+          STEP_VAR: 'Step var is set!!!'
+          SECRET_VAR: ${{ secrets.SECRET_VAR }}
+      - uses: actions/upload-artifact@v2
         with:
-          node-version: '14'
-      - run: npm install -g bats
-      - run: bats -v
+          name: test-artifact
+          path: test-output.txt
+
+          # Check pwd
+  upload:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: test-artifact
+      - run: cat test-output.txt
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: 'test-output.txt'
+          token: ${{ secrets.GITHUB_TOKEN }}
 
