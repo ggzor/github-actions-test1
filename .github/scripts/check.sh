@@ -12,7 +12,9 @@ echo "Generating test artifact..."
 printf "
 Some generated test data:
 MATRIX = %s
-" "$MATRIX_VAR" > test-output.txt
+SECRET = %s
+PWD = %s
+" "$MATRIX_VAR" "$SECRET_VAR" "$(pwd)" > test-output.txt
 
 echo "Some environment data:
 pwd=$(pwd)
